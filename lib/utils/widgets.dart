@@ -16,7 +16,8 @@ List<Color> colors = [
 class PriorityPicker extends StatefulWidget {
   final Function(int) onTap;
   final int selectedIndex;
-  const PriorityPicker({Key key, this.onTap, this.selectedIndex}) : super(key: key);
+  const PriorityPicker({Key key, this.onTap, this.selectedIndex})
+      : super(key: key);
   @override
   _PriorityPickerState createState() => _PriorityPickerState();
 }
@@ -34,6 +35,7 @@ class _PriorityPickerState extends State<PriorityPicker> {
       height: 60,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 8),
         itemCount: 3,
         itemBuilder: (BuildContext context, int index) {
           return InkWell(
@@ -45,8 +47,8 @@ class _PriorityPickerState extends State<PriorityPicker> {
             },
             child: Container(
               padding: const EdgeInsets.all(8.0),
-              width: width / 3,
-              height: 70,
+              width: width / 3.33,
+              height: 66,
               child: Container(
                 child: Center(
                   child: Text(priorityText[index],
@@ -57,13 +59,11 @@ class _PriorityPickerState extends State<PriorityPicker> {
                           fontWeight: FontWeight.bold)),
                 ),
                 decoration: BoxDecoration(
-                    color: selectedIndex == index
-                        ? priorityColor[index]
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: selectedIndex == index
-                        ? Border.all(width: 2, color: Colors.black)
-                        : Border.all(width: 0,color: Colors.transparent)),
+                  color: selectedIndex == index
+                      ? priorityColor[index]
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
               ),
             ),
           );
@@ -76,7 +76,8 @@ class _PriorityPickerState extends State<PriorityPicker> {
 class ColorPicker extends StatefulWidget {
   final Function(int) onTap;
   final int selectedIndex;
-  const ColorPicker({Key key, this.onTap, this.selectedIndex}) : super(key: key);
+  const ColorPicker({Key key, this.onTap, this.selectedIndex})
+      : super(key: key);
   @override
   _ColorPickerState createState() => _ColorPickerState();
 }
@@ -92,6 +93,7 @@ class _ColorPickerState extends State<ColorPicker> {
       width: width,
       height: 50,
       child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: 8.0),
         scrollDirection: Axis.horizontal,
         itemCount: colors.length,
         itemBuilder: (BuildContext context, int index) {
@@ -114,7 +116,7 @@ class _ColorPickerState extends State<ColorPicker> {
                 decoration: BoxDecoration(
                     color: colors[index],
                     shape: BoxShape.circle,
-                    border: Border.all(width: 2, color: Colors.black)),
+                    border: Border.all(width: 1, color: Colors.grey)),
               ),
             ),
           );

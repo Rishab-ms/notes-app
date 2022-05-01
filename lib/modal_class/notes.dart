@@ -4,12 +4,13 @@ class Note {
   String _description;
   String _date;
   int _priority, _color;
+  String _subject;
 
   Note(this._title, this._date, this._priority, this._color,
-      [this._description]);
+      [this._description, this._subject]);
 
   Note.withId(this._id, this._title, this._date, this._priority, this._color,
-      [this._description]);
+      [this._description, this._subject]);
 
   int get id => _id;
 
@@ -20,13 +21,14 @@ class Note {
   int get priority => _priority;
   int get color => _color;
   String get date => _date;
+  String get subject => _subject;
 
   set title(String newTitle) {
     if (newTitle.length <= 255) {
       _title = newTitle;
     }
   }
-
+  
   set description(String newDescription) {
     if (newDescription.length <= 255) {
       _description = newDescription;
@@ -39,7 +41,7 @@ class Note {
     }
   }
 
-  set color(int newColor) {
+  set color(int newColor) {    
     if (newColor >= 0 && newColor <= 9) {
       _color = newColor;
     }
@@ -48,7 +50,9 @@ class Note {
   set date(String newDate) {
     _date = newDate;
   }
-
+  set subject(String newSubject) {
+    _subject = newSubject;
+  }
   // Convert a Note object into a Map object
   Map<String, dynamic> toMap() {
     var map = Map<String, dynamic>();
@@ -60,6 +64,7 @@ class Note {
     map['priority'] = _priority;
     map['color'] = _color;
     map['date'] = _date;
+    map['subject'] = _subject;
 
     return map;
   }
@@ -72,5 +77,6 @@ class Note {
     _priority = map['priority'];
     _color = map['color'];
     _date = map['date'];
+    _subject = map['subject'];
   }
 }

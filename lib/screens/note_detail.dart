@@ -1,14 +1,21 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:notes_app/db_helper/db_helper.dart';
 import 'package:notes_app/modal_class/notes.dart';
 import 'package:notes_app/utils/widgets.dart';
+import 'package:animations/animations.dart';
+import '../utils/constants.dart';
+import 'package:share_plus/share_plus.dart';
 
 class NoteDetail extends StatefulWidget {
   final String appBarTitle;
   final Note note;
-
-  const NoteDetail(this.note, this.appBarTitle, {Key key}) : super(key: key);
+  final String subject;
+  const NoteDetail(this.note, this.appBarTitle,
+      {Key key, @required this.subject})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -27,6 +34,11 @@ class NoteDetailState extends State<NoteDetail> {
   bool isEdited = false;
 
   NoteDetailState(this.note, this.appBarTitle);
+  @override
+  void initState() {
+    note.subject = widget.subject;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,18 +65,26 @@ class NoteDetailState extends State<NoteDetail> {
                   isEdited ? showDiscardDialog(context) : moveToLastScreen();
                 }),
             actions: <Widget>[
-              IconButton(
-                splashRadius: 22,
-                icon: const Icon(
-                  Icons.save,
-                  color: Colors.black,
-                ),
+              ActionChip(
+                label: const Text('Save'),
+                backgroundColor: Colors.blueAccent,
+                labelStyle: const TextStyle(color: Colors.white),
+                labelPadding:
+                    const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
                 onPressed: () {
                   titleController.text.isEmpty
                       ? showEmptyTitleDialog(context)
                       : _save();
                 },
               ),
+              //share button
+              widget.appBarTitle == 'Edit Note'
+                  ? IconButton(
+                      icon: const Icon(Icons.share, color: Colors.black),
+                      onPressed: () {
+                        showShareDialog(context);
+                      })
+                  : Offstage(),
               IconButton(
                 splashRadius: 22,
                 icon: const Icon(Icons.delete, color: Colors.black),
@@ -76,8 +96,22 @@ class NoteDetailState extends State<NoteDetail> {
           ),
           body: Container(
             color: colors[color],
+            padding: EdgeInsets.only(
+              top: 8,
+            ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                subjectDropDown(context),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 16.0),
+                  child: Text('Priority :',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline5
+                          .copyWith(color: Colors.blueGrey, fontSize: 16)),
+                ),
                 PriorityPicker(
                   selectedIndex: 3 - note.priority,
                   onTap: (index) {
@@ -104,9 +138,28 @@ class NoteDetailState extends State<NoteDetail> {
                     onChanged: (value) {
                       updateTitle();
                     },
-                    decoration: const InputDecoration.collapsed(
-                      hintText: 'Title',
-                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: InputDecoration(
+                        hintText: 'Title of the note',
+                        hintStyle: Theme.of(context)
+                            .textTheme
+                            .bodyText2
+                            .copyWith(
+                                color: Colors.blueGrey,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400),
+                        label: Text('Title',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline5
+                                .copyWith(color: Colors.blueGrey.shade800)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: Colors.blueGrey,
+                            width: 2,
+                          ),
+                        )),
                   ),
                 ),
                 Expanded(
@@ -115,15 +168,22 @@ class NoteDetailState extends State<NoteDetail> {
                     child: TextField(
                       keyboardType: TextInputType.multiline,
                       maxLines: 10,
-                      maxLength: 255,
+                      textCapitalization: TextCapitalization.sentences,
+                      maxLength: 5000,
                       controller: descriptionController,
                       style: Theme.of(context).textTheme.bodyText1,
                       onChanged: (value) {
                         updateDescription();
                       },
-                      decoration: const InputDecoration.collapsed(
-                        hintText: 'Description',
-                      ),
+                      decoration: InputDecoration(
+                          hintText: 'Description',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Colors.blueGrey,
+                              width: 2,
+                            ),
+                          )),
                     ),
                   ),
                 ),
@@ -133,13 +193,68 @@ class NoteDetailState extends State<NoteDetail> {
         ));
   }
 
+  subjectDropDown(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Subject :',
+            style: TextStyle(fontSize: 16, color: Colors.blueGrey),
+          ),
+          SizedBox(
+            width: 10,
+          ),
+          SizedBox(
+            // width: 150,
+            child: DropdownButton<String>(
+              isExpanded: false,
+              isDense: true,
+              borderRadius: BorderRadius.circular(36),
+              hint: Text(
+                'Subject',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              value: note.subject,
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.blueGrey,
+              ),
+              iconSize: 24,
+              elevation: 16,
+              style: TextStyle(
+                  color: Colors.blueGrey.shade800, fontWeight: FontWeight.w600),
+              underline: Container(
+                height: 0.5,
+                color: Colors.blueGrey,
+              ),
+              onChanged: (String newValue) {
+                setState(() {
+                  note.subject = newValue;
+                });
+              },
+              items: Constants.subjectList
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void showDiscardDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           shape: const RoundedRectangleBorder(
-              borderRadius:  BorderRadius.all(Radius.circular(10.0))),
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
           title: Text(
             "Discard Changes?",
             style: Theme.of(context).textTheme.bodyText2,
@@ -210,7 +325,7 @@ class NoteDetailState extends State<NoteDetail> {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all( Radius.circular(10.0))),
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
           title: Text(
             "Delete Note?",
             style: Theme.of(context).textTheme.bodyText2,
@@ -262,7 +377,7 @@ class NoteDetailState extends State<NoteDetail> {
   // Save data to database
   void _save() async {
     moveToLastScreen();
-
+    updateSubject();
     note.date = DateFormat.yMMMd().format(DateTime.now());
 
     if (note.id != null) {
@@ -275,5 +390,15 @@ class NoteDetailState extends State<NoteDetail> {
   void _delete() async {
     await helper.deleteNote(note.id);
     moveToLastScreen();
+  }
+
+  void updateSubject() {
+    isEdited = true;
+    note.subject = note.subject;
+  }
+
+  void showShareDialog(BuildContext context) {
+    //share the title and description
+    Share.share(note.title + '\n\n' + note.description);
   }
 }
